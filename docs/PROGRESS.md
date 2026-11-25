@@ -76,8 +76,20 @@
 `.venv/bin/python -m unittest discover -s tests -t . -v`：共 77 项，全部 OK，跳过 2 项（真实网络测试需设 `AINEWS_LIVE=1`，样例输出需设 `AINEWS_WRITE_SAMPLE=1`）。
 真实网络测试 `AINEWS_LIVE=1 ... LiveFetchTest`：两个来源都 ok（量子位 10 条，TechCrunch 20 条）。
 
+## Git 与 GitHub
+
+- 远程仓库（公开）：https://github.com/giazhx03-dotcom/ai-news-homework-claude-code
+- 2026-11-26 03:10 用户通过浏览器登录 gh（账号 giazhx03-dotcom）。gh 2.105.0 arm64 安装在 `~/.local/bin/gh`。
+- 公开前清理了历史：用 `git filter-branch` 从所有提交中去掉本机绝对路径和生成的 plist，作者改为 GitHub noreply 邮箱。
+- 第一次建的仓库里，旧提交仍能按 SHA 访问，所以由用户删除该仓库，再用同名重建公开仓库，推送干净的历史。
+- 没有动账号下的其他仓库（ai-news-homework-codex）。
+
 ## Git 版本记录
 
-见 `git log`。各提交：
-- `d2b84be` v1.0：初始实现与首次真实运行样例
-- （本次提交）审查问题修复、规则修正、真实运行重做、进度记录
+| 提交 | 内容 |
+|---|---|
+| `139ef66` | v1.0：初始实现与首次真实运行样例 |
+| `9c85b86` | 根据独立审查修复问题；规则修正；重做真实运行 |
+| `34a372d` | 定时任务：修正 TCC 授权对象 |
+| `2b3418f` | 授权后经 launchd 触发验证成功 |
+| （本提交） | 记录 GitHub 仓库与历史清理 |
