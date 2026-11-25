@@ -59,6 +59,18 @@
 | 触发后执行成功 | ❌ 退出码 1，原因：`PermissionError: Operation not permitted: .../.venv/pyvenv.cfg`（macOS TCC 阻止后台进程访问“桌面”） |
 | 自然运行（09:00） | ⏳ 未发生；在授权解决之前也会失败 |
 
+### 2026-11-26 02:45–02:48 授权后复验（用户表示已授权）
+
+| 步骤 | 结果 |
+|---|---|
+| 清空 err 日志，用 venv 解释器触发 | ❌ 仍报 `PermissionError ... .venv/pyvenv.cfg` |
+| 定位原因 | launchd 实际执行的是 `.../Versions/3.9/bin/python3.9`，不是 `Resources/Python.app`（两者签名标识相同，都是 com.apple.python3）；之前文档让授权的对象写错了 |
+| 临时改为直接用 `Python.app/Contents/MacOS/Python` 触发 | ❌ `No module named ainews`（读不到工作目录） |
+| 用一次性诊断任务（launchctl submit，已移除）让该解释器列目录 | ❌ `~/Desktop` 和项目目录都是 `Operation not permitted`，说明对 Python.app 的授权对 launchd 启动的进程没有生效 |
+| 恢复为 venv 解释器并重新 install，再触发 | ❌ 同样的权限错误；`status` 现在会提示正确的授权路径 `bin/python3.9` |
+
+结论：定时任务仍是“已安装、已启用、能触发，但执行被 TCC 拦截”。需要把 `bin/python3.9` 加入完全磁盘访问权限，或者把项目移出桌面。
+
 ## 测试
 
 `.venv/bin/python -m unittest discover -s tests -t . -v`：共 77 项，全部 OK，跳过 2 项（真实网络测试需设 `AINEWS_LIVE=1`，样例输出需设 `AINEWS_WRITE_SAMPLE=1`）。

@@ -36,7 +36,8 @@ scripts/schedule.sh uninstall   # 卸载并删除 plist
 - **休眠**：到点时处于睡眠，launchd 会在唤醒后补跑一次（多个错过的时间点合并为一次）。
 - **未登录**：这是用户级 LaunchAgent，必须登录图形会话才会运行；注销或在登录界面时不运行。
 - **macOS 隐私保护（TCC）**：项目在“桌面”目录下，后台进程默认不能读取。2026-11-26 实测，触发后 Python 报错：`PermissionError: Operation not permitted: .../.venv/pyvenv.cfg`。解决方法（二选一，需要你手动操作）：
-  1. 打开“系统设置 → 隐私与安全性 → 完全磁盘访问权限”，添加 `/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app`（即真实解释器所在的应用；`status` 会打印路径）。然后清空 `logs/launchd.err.log`，执行 `scripts/schedule.sh trigger` 验证。
+  1. 打开“系统设置 → 隐私与安全性 → 完全磁盘访问权限”，点“+”，在文件选择框中按 Cmd+Shift+G，粘贴 venv 实际解析到的可执行文件 `/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/bin/python3.9`（`status` 会打印这个路径），添加后确认开关已打开。然后清空 `logs/launchd.err.log`，执行 `scripts/schedule.sh trigger` 验证。
+     - 2026-11-26 02:46 实测：只授权 `Resources/Python.app`，由 launchd 启动的该 App 内可执行文件**仍然**无法读取 `~/Desktop`（`Operation not permitted`）。所以授权对象必须是上面的 `bin/python3.9`，不能是 Python.app。
   2. 把项目移到非受保护目录（如 `~/Projects/`），然后重新 `scripts/setup.sh` 和 `scripts/schedule.sh install`（任务标识会随路径变化）。
 
 ## 验证状态的区分

@@ -3,7 +3,10 @@
 # 用法：scripts/schedule.sh {generate|install|status|trigger|disable|enable|uninstall}
 set -euo pipefail
 PROJECT="$(cd "$(dirname "$0")/.." && pwd)"
-PYTHON="$PROJECT/.venv/bin/python"
+VENV_PY="$PROJECT/.venv/bin/python"
+# 定时任务解释器：默认项目 venv（明确路径），可用 AINEWS_SCHED_PYTHON 覆盖。
+PYTHON="${AINEWS_SCHED_PYTHON:-$VENV_PY}"
+REAL_PY="$(readlink -f "$PYTHON")"   # macOS TCC 实际按此可执行文件判断权限
 HASH="$(printf '%s' "$PROJECT" | shasum -a 1 | cut -c1-8)"
 LABEL="com.ai-news-homework-claude-code.${HASH}"   # 含项目唯一标识（项目路径哈希）
 HOUR="${AINEWS_HOUR:-9}"; MINUTE="${AINEWS_MINUTE:-0}"
@@ -21,7 +24,9 @@ check_tz() {
 }
 
 generate() {
-  [ -x "$PYTHON" ] || { echo "缺少 $PYTHON，请先运行 scripts/setup.sh" >&2; exit 1; }
+  [ -x "$VENV_PY" ] || { echo "缺少 $VENV_PY，请先运行 scripts/setup.sh" >&2; exit 1; }
+  [ -x "$PYTHON" ] || { echo "定时解释器不存在：$PYTHON" >&2; exit 1; }
+  echo "定时任务解释器：$PYTHON"
   mkdir -p "$PROJECT/logs"
   sed -e "s#__LABEL__#${LABEL}#g" -e "s#__PYTHON__#${PYTHON}#g" -e "s#__PROJECT__#${PROJECT}#g" \
       -e "s#__HOUR__#${HOUR}#g" -e "s#__MINUTE__#${MINUTE}#g" \
@@ -51,7 +56,8 @@ case "${1:-}" in
     echo "--- launchd 错误输出（末 5 行）---"; tail -n 5 "$PROJECT/logs/launchd.err.log" 2>/dev/null || echo "无"
     if grep -q "Operation not permitted" "$PROJECT/logs/launchd.err.log" 2>/dev/null; then
       echo "提示：macOS 隐私保护阻止后台进程访问项目目录（桌面）。请在 系统设置→隐私与安全性→完全磁盘访问权限 中添加："
-      echo "  $(dirname "$(dirname "$(readlink -f "$PYTHON")")")/Resources/Python.app（真实解释器：$(readlink -f "$PYTHON")）"
+      echo "  $REAL_PY"
+      echo "  （在“+”文件选择框中按 Cmd+Shift+G 粘贴上述路径；确认开关已打开）或把项目移出“桌面”后重新 install"
       echo "  然后执行：scripts/schedule.sh trigger 验证（清空 logs/launchd.err.log 后再看结果）"
     fi ;;
   trigger)
