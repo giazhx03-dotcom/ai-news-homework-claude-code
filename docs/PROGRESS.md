@@ -56,8 +56,8 @@
 | 配置生成 | ✅ `plutil -lint` OK |
 | 任务安装启用 | ✅ `launchctl print` 显示已加载、enabled，program 和 working directory 正确 |
 | 手动触发（kickstart） | ✅ launchd 确实启动了进程（runs=2） |
-| 触发后执行成功 | ❌ 退出码 1，原因：`PermissionError: Operation not permitted: .../.venv/pyvenv.cfg`（macOS TCC 阻止后台进程访问“桌面”） |
-| 自然运行（09:00） | ⏳ 未发生；在授权解决之前也会失败 |
+| 触发后执行成功 | ✅ 2026-11-26 02:58 用户为 `bin/python3.9` 授予完全磁盘访问权限后，kickstart 触发 run `20261126T025835-4c14`，退出码 0，两个来源均成功（无更新），日报已更新（此前因 TCC 失败，见下） |
+| 自然运行（09:00） | ⏳ 尚未到时间，待首次 09:00 自然运行后在 logs/run.log 核对 |
 
 ### 2026-11-26 02:45–02:48 授权后复验（用户表示已授权）
 
@@ -69,7 +69,7 @@
 | 用一次性诊断任务（launchctl submit，已移除）让该解释器列目录 | ❌ `~/Desktop` 和项目目录都是 `Operation not permitted`，说明对 Python.app 的授权对 launchd 启动的进程没有生效 |
 | 恢复为 venv 解释器并重新 install，再触发 | ❌ 同样的权限错误；`status` 现在会提示正确的授权路径 `bin/python3.9` |
 
-结论：定时任务仍是“已安装、已启用、能触发，但执行被 TCC 拦截”。需要把 `bin/python3.9` 加入完全磁盘访问权限，或者把项目移出桌面。
+当时结论：定时任务“已安装、已启用、能触发，但执行被 TCC 拦截”。02:58 授权 `bin/python3.9` 后已解决（见上表）。需要把 `bin/python3.9` 加入完全磁盘访问权限，或者把项目移出桌面。
 
 ## 测试
 

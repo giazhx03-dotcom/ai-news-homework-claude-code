@@ -1,6 +1,6 @@
 {
   "report_date": "2026-11-26",
-  "generated_at": "2026-11-26 02:40 SGT",
+  "generated_at": "2026-11-26 02:58 SGT",
   "timezone": "Asia/Singapore",
   "categories": [
     "模型与研究",
@@ -552,10 +552,10 @@
   },
   "total_count": 28,
   "latest_run": {
-    "run_id": "20261126T024026-e9b1",
-    "started_display": "2026-11-26 02:40 SGT",
-    "finished_display": "2026-11-26 02:40 SGT",
-    "window_display": "2026-11-25 20:40 SGT — 2026-11-26 02:40 SGT",
+    "run_id": "20261126T025835-4c14",
+    "started_display": "2026-11-26 02:58 SGT",
+    "finished_display": "2026-11-26 02:58 SGT",
+    "window_display": "2026-11-25 20:40 SGT — 2026-11-26 02:58 SGT",
     "mode": "incremental",
     "new_count": 0,
     "sources": [
@@ -563,7 +563,7 @@
         "source_id": "qbitai",
         "source_name": "量子位",
         "status": "ok_no_new",
-        "window_display": "2026-11-25 20:40 SGT — 2026-11-26 02:40 SGT",
+        "window_display": "2026-11-25 20:40 SGT — 2026-11-26 02:58 SGT",
         "fetched_count": 10,
         "in_window_count": 5,
         "relevant_count": 5,
@@ -574,7 +574,7 @@
         "source_id": "techcrunch_ai",
         "source_name": "TechCrunch AI",
         "status": "ok_no_new",
-        "window_display": "2026-11-25 20:40 SGT — 2026-11-26 02:40 SGT",
+        "window_display": "2026-11-25 20:40 SGT — 2026-11-26 02:58 SGT",
         "fetched_count": 20,
         "in_window_count": 5,
         "relevant_count": 5,
@@ -800,6 +800,38 @@
           "source_name": "TechCrunch AI",
           "status": "ok_no_new",
           "window_display": "2026-11-25 20:40 SGT — 2026-11-26 02:40 SGT",
+          "fetched_count": 20,
+          "in_window_count": 5,
+          "relevant_count": 5,
+          "new_count": 0,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run_id": "20261126T025835-4c14",
+      "started_display": "2026-11-26 02:58 SGT",
+      "finished_display": "2026-11-26 02:58 SGT",
+      "window_display": "2026-11-25 20:40 SGT — 2026-11-26 02:58 SGT",
+      "mode": "incremental",
+      "new_count": 0,
+      "sources": [
+        {
+          "source_id": "qbitai",
+          "source_name": "量子位",
+          "status": "ok_no_new",
+          "window_display": "2026-11-25 20:40 SGT — 2026-11-26 02:58 SGT",
+          "fetched_count": 10,
+          "in_window_count": 5,
+          "relevant_count": 5,
+          "new_count": 0,
+          "error": null
+        },
+        {
+          "source_id": "techcrunch_ai",
+          "source_name": "TechCrunch AI",
+          "status": "ok_no_new",
+          "window_display": "2026-11-25 20:40 SGT — 2026-11-26 02:58 SGT",
           "fetched_count": 20,
           "in_window_count": 5,
           "relevant_count": 5,
@@ -1175,6 +1207,56 @@
       ],
       "window_start": "2026-11-25T12:40:06+00:00",
       "window_end": "2026-11-25T18:40:26+00:00"
+    },
+    {
+      "run_id": "20261126T025835-4c14",
+      "started_at": "2026-11-25T18:58:35+00:00",
+      "finished_at": "2026-11-25T18:58:39+00:00",
+      "report_date": "2026-11-26",
+      "mode": "incremental",
+      "new_count": 0,
+      "sources": [
+        {
+          "source_id": "qbitai",
+          "source_name": "量子位",
+          "mode": "incremental",
+          "window_start": "2026-11-25T12:40:26+00:00",
+          "window_end": "2026-11-25T18:58:35+00:00",
+          "status": "ok_no_new",
+          "error": null,
+          "http_status": 200,
+          "fetched_count": 10,
+          "invalid_count": 0,
+          "in_window_count": 5,
+          "no_date_count": 0,
+          "relevant_count": 5,
+          "pending_count": 0,
+          "excluded_count": 0,
+          "duplicate_count": 5,
+          "new_count": 0
+        },
+        {
+          "source_id": "techcrunch_ai",
+          "source_name": "TechCrunch AI",
+          "mode": "incremental",
+          "window_start": "2026-11-25T12:40:26+00:00",
+          "window_end": "2026-11-25T18:58:35+00:00",
+          "status": "ok_no_new",
+          "error": null,
+          "http_status": 200,
+          "fetched_count": 20,
+          "invalid_count": 0,
+          "in_window_count": 5,
+          "no_date_count": 0,
+          "relevant_count": 5,
+          "pending_count": 1,
+          "excluded_count": 0,
+          "duplicate_count": 5,
+          "new_count": 0
+        }
+      ],
+      "window_start": "2026-11-25T12:40:26+00:00",
+      "window_end": "2026-11-25T18:58:35+00:00"
     }
   ]
 }
