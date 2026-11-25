@@ -82,6 +82,17 @@ def _runs(report: dict) -> list:
     return list(report.get("runs") or [])
 
 
+def _fail_notice(report: dict) -> str | None:
+    """当日已有条目、但本次运行有来源读取失败时的提示（total_count==0 时由 _empty_reason 负责）。"""
+    if _int(report.get("total_count")) == 0:
+        return None
+    failed = [s for s in (_latest_run(report).get("sources") or []) if s.get("status") == "failed"]
+    if not failed:
+        return None
+    names = "、".join(_s(s.get("source_name") or s.get("source_id")) for s in failed)
+    return f"本次运行中 {names} 读取失败；已保留当日此前收集的条目，失败来源将在下次运行时从上次成功位置补取。"
+
+
 def _empty_reason(report: dict) -> str | None:
     """total_count==0 时返回说明文字，否则 None。"""
     if _int(report.get("total_count")) > 0:
@@ -275,6 +286,9 @@ def render_html(report: dict) -> str:
         srcs = run.get("sources") or []
         cls = "fail" if srcs and all(s.get("status") == "failed" for s in srcs) else "empty"
         out.append(f"<div class=\"notice {cls}\">{_e(reason)}</div>\n")
+    fail = _fail_notice(report)
+    if fail:
+        out.append(f"<div class=\"notice fail\">{_e(fail)}</div>\n")
     out.append("</header>\n")
 
     # 来源状态
@@ -318,7 +332,7 @@ def md_escape(v) -> str:
     """转义 Markdown 行内特殊字符，并把换行压成空格。"""
     s = re.sub(r"\s*[\r\n]+\s*", " ", _s(v))
     s = _MD_SPECIAL.sub(r"\\\1", s)
-    s = s.replace("&", "&amp;")
+    s = re.sub(r"&(?=#?[A-Za-z0-9]+;)", "&amp;", s)  # 仅转义会被当作 HTML 实体的 &
     return s
 
 
@@ -380,6 +394,9 @@ def render_markdown(report: dict) -> str:
     reason = _empty_reason(report)
     if reason:
         L += ["", f"> **{md_escape(reason)}**"]
+    fail = _fail_notice(report)
+    if fail:
+        L += ["", f"> **{md_escape(fail)}**"]
     L += ["", "## 来源状态（本次运行）", ""]
     L += _md_source_table(run.get("sources") or [])
     if len(runs) > 1:

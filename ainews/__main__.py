@@ -25,15 +25,23 @@ def main(argv=None) -> int:
 
     if a.cmd == "run":
         try:
+            since = parse_cli_time(a.since) if a.since else None
+            until = parse_cli_time(a.until) if a.until else None
+        except ValueError as e:
+            print(f"时间格式错误（示例：2026-11-25 或 2026-11-25T09:00 或 2026-11-25T01:00Z）：{e}", file=sys.stderr)
+            return 2
+        try:
             rec = pipeline.run(
-                since=parse_cli_time(a.since) if a.since else None,
-                until=parse_cli_time(a.until) if a.until else None,
+                since=since, until=until,
                 only=a.sources.split(",") if a.sources else None,
                 force_fail=a.force_fail.split(",") if a.force_fail else None,
             )
         except pipeline.LockBusy as e:
             print(f"跳过：{e}", file=sys.stderr)
             return 75
+        except ValueError as e:
+            print(f"参数错误：{e}", file=sys.stderr)
+            return 2
         print(f"运行 {rec['run_id']}（{rec['mode']}）完成，本次新增 {rec['new_count']} 条")
         for s in rec["sources"]:
             print(f"  - {s['source_name']}: {s['status']} 窗口 {fmt_sgt(s['window_start'])} — {fmt_sgt(s['window_end'])}"
@@ -43,7 +51,11 @@ def main(argv=None) -> int:
             print(f"  {k}: {v}")
         return 0 if any(s["status"] != "failed" for s in rec["sources"]) else 1
     if a.cmd == "report":
-        print(json.dumps(pipeline.regenerate(report_date=a.date), ensure_ascii=False, indent=2))
+        try:
+            print(json.dumps(pipeline.regenerate(report_date=a.date), ensure_ascii=False, indent=2))
+        except ValueError as e:
+            print(f"无法生成：{e}", file=sys.stderr)
+            return 2
         return 0
     if a.cmd == "status":
         st = Store(pipeline.Paths(pipeline.PROJECT_ROOT).db)

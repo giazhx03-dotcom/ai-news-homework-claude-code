@@ -87,7 +87,7 @@ class TestClassify(unittest.TestCase):
     def test_four_categories(self):
         cases = {
             "DeepSeek open-sources new reasoning model weights and paper": "模型与研究",
-            "Google rolls out Gemini features to Gmail users": "产品与工具",
+            "Google rolls out Gemini AI features to Gmail users": "产品与工具",
             "英伟达AI芯片出口管制新规发布，影响数据中心市场": "行业与政策",
             "OpenAI 年度回顾": "待确认",
         }
@@ -97,6 +97,16 @@ class TestClassify(unittest.TestCase):
     def test_off_topic_ai_writing_excluded(self):
         self.assertEqual(classify.assess("某明星演唱会新闻稿由AI生成的配图引热议")["relevance"], "no")
         self.assertEqual(classify.assess("World Cup recap: AI-generated match report goes viral")["relevance"], "no")
+
+    def test_ambiguous_names(self):
+        self.assertEqual(classify.assess("Claude Monet painting sells for $50 million")["relevance"], "no")
+        self.assertEqual(classify.assess("Llama farm opens to visitors")["relevance"], "no")
+        self.assertEqual(classify.assess("claude update for developers")["relevance"], "no")  # 小写不算产品名
+        self.assertEqual(classify.assess("Anthropic ships Claude update")["relevance"], "yes")
+
+    def test_context_only_excluded(self):
+        for t in ["新款手机芯片参数曝光", "Robot vacuum review: training tips", "推理小说新作上市，开源出版模式受关注"]:
+            self.assertEqual(classify.assess(t)["relevance"], "no", t)
 
     def test_weak_signal_pending(self):
         v = classify.assess("周末市场速览", "文中提到部分公司在使用 AI 工具和新的模型")
@@ -275,6 +285,31 @@ class TestPipeline(Base):
         html = (self.tmp / "reports" / "latest.html").read_text(encoding="utf-8")
         self.assertIn("读取失败", html)
         self.assertIsNone(self.store().get_state("src_a")["last_window_end"])
+
+    def test_invalid_range_and_empty_sources(self):
+        with self.assertRaises(ValueError):
+            self.run_once(since=NOW, until=NOW - timedelta(days=1))
+        with self.assertRaises(ValueError):
+            pipeline.run(base=self.tmp, sources=[], fetch=self.fake, now=NOW)
+
+    def test_failure_notice_when_day_has_articles(self):
+        self.fake.feeds["src_a"] = [item("a1", "OpenAI releases new model", "https://a.example/1", 1)]
+        self.run_once()
+        self.fake.feeds["src_a"] = "HTTP 500"
+        self.run_once(now=NOW + timedelta(hours=1))
+        html = (self.tmp / "reports" / "latest.html").read_text(encoding="utf-8")
+        self.assertIn('notice fail', html)
+        self.assertIn("OpenAI releases new model", html)  # 失败不清空当日内容
+        md = (self.tmp / "reports" / "latest.md").read_text(encoding="utf-8")
+        self.assertIn("读取失败", md)
+
+    def test_regenerate(self):
+        self.fake.feeds["src_a"] = [item("a1", "OpenAI releases new model", "https://a.example/1", 1)]
+        self.run_once()
+        out = pipeline.regenerate(base=self.tmp, report_date="2026-11-26", sources=SOURCES)
+        self.assertTrue(Path(out["html"]).exists())
+        with self.assertRaises(ValueError):
+            pipeline.regenerate(base=self.tmp, report_date="2020-01-01", sources=SOURCES)
 
     def test_lock_prevents_concurrent_run(self):
         paths = pipeline.Paths(self.tmp)

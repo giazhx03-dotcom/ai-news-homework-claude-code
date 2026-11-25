@@ -75,29 +75,19 @@
         "GPT-4*",
         "GPT-5*",
         "GPT-4o",
-        "Sora",
         "Anthropic",
-        "Claude",
         "DeepMind",
-        "Gemini",
-        "Copilot",
-        "Llama",
         "Mistral AI",
         "Hugging Face",
         "HuggingFace",
         "Stability AI",
         "Stable Diffusion",
         "Midjourney",
-        "Perplexity",
         "xAI",
-        "Grok",
         "DeepSeek",
         "Qwen",
-        "Kimi",
-        "MiniMax",
         "Zhipu",
         "Moonshot AI",
-        "Cohere",
         "ElevenLabs",
         "Scale AI",
         "Cursor AI",
@@ -170,7 +160,6 @@
         "车祸",
         "火灾",
         "命案",
-        "天气",
         "彩票",
         "星座"
       ],
@@ -188,7 +177,6 @@
         "movie review",
         "concert",
         "horoscope",
-        "weather",
         "lottery"
       ]
     },
@@ -232,7 +220,23 @@
         "CoreWeave"
       ]
     },
-    "_规则": "得分≥3 且含核心术语/标题AI → 收录并分类；得分≥2 且有任一 AI 信号（含实体、语境词）→ 待确认；其余排除。标题含体育娱乐社会语境且标题无核心术语 → 排除"
+    "_规则": "得分≥3 且含核心术语/标题AI → 收录并分类；得分≥2 且命中核心术语、独立AI、芯片实体或有效歧义产品名之一 → 待确认（仅语境词不够）；标题含体育娱乐社会语境且标题无核心术语：同时有“AI写作/AI生成”等表述或无标题AI → 排除，标题有独立AI → 待确认",
+    "ambiguous_terms": {
+      "_说明": "可能是普通词/人名的 AI 产品名：区分大小写；只有同时出现其他 AI 信号（核心术语、独立 AI、芯片实体或语境词）时才按核心术语计分，且不能豁免体育/娱乐排除。例：'Claude Monet painting' 排除，'Anthropic Claude update' 收录",
+      "en": [
+        "Gemini",
+        "Claude",
+        "Llama",
+        "Perplexity",
+        "Grok",
+        "MiniMax",
+        "Copilot",
+        "Sora",
+        "Cohere",
+        "Kimi",
+        "Mistral"
+      ]
+    }
   },
   "categories": {
     "_说明": "AI 相关条目再按关键词计分：标题命中 2 分，简介命中 1 分；最高分唯一且 ≥2 才归类，否则（并列或得分不足）归入“待确认”",
@@ -492,11 +496,34 @@
     },
     {
       "title": "9400万参数硬刚50亿，权重显存直降98%",
+      "expect_relevant": false,
+      "_注": "已知漏判：仅语境词（参数/权重/显存），规则无法确认 AI 相关"
+    },
+    {
+      "title": "Mainland retail sales rise in October",
+      "expect_relevant": false
+    },
+    {
+      "title": "Claude Monet painting sells for $50 million",
+      "expect_relevant": false
+    },
+    {
+      "title": "Gemini weekly horoscope: love and money",
+      "expect_relevant": false
+    },
+    {
+      "title": "Nvidia unveils AI weather forecasting model",
+      "expect_relevant": true,
+      "expect_category": "待确认",
+      "_注": "模型（模型与研究）与 Nvidia（行业与政策）并列 → 待确认"
+    },
+    {
+      "title": "AI 电影首周票房破亿引发热议",
       "expect_relevant": true,
       "expect_category": "待确认"
     },
     {
-      "title": "Mainland retail sales rise in October",
+      "title": "新款手机芯片参数曝光",
       "expect_relevant": false
     }
   ]

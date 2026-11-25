@@ -28,6 +28,11 @@ def _compile_term(term: str) -> Tuple[str, "re.Pattern"]:
     return t, re.compile(pat, re.IGNORECASE)
 
 
+def _compile_case_sensitive(group: dict) -> List[Tuple[str, "re.Pattern"]]:
+    terms = group.get("zh", []) + group.get("en", [])
+    return [(t, re.compile(r"(?<![A-Za-z0-9])" + re.escape(t) + r"(?![A-Za-z0-9])")) for t in terms]
+
+
 def _compile_group(group: dict) -> List[Tuple[str, "re.Pattern"]]:
     terms = []
     for lang in ("zh", "en"):
@@ -41,6 +46,7 @@ class Rules:
         self.core = _compile_group(r["core_terms"])
         self.context = _compile_group(r["context_terms"])
         self.entity = _compile_group(r.get("entity_terms", {}))
+        self.ambiguous = _compile_case_sensitive(r.get("ambiguous_terms", {}))
         self.off_topic = _compile_group(r["off_topic_terms"])
         self.incidental = _compile_group(r["incidental_terms"])
         self.ai_token = re.compile(r["ai_token"]["pattern"])  # 大小写敏感
@@ -76,24 +82,33 @@ def assess(title: str, summary: str = "", rules: Optional[Rules] = None) -> Dict
     ctx = set(_hits(title, rules.context)) | set(_hits(summary, rules.context))
     ent_t = _hits(title, rules.entity)
     ent_s = [h for h in _hits(summary, rules.entity) if h not in ent_t]
+    # 歧义产品名（Claude/Gemini…）：区分大小写，且须有其他 AI 信号才计入
+    amb_t, amb_s = [], []
+    if core_t or core_s or tok_t or tok_s or ent_t or ent_s or ctx:
+        amb_t = _hits(title, rules.ambiguous)
+        amb_s = [h for h in _hits(summary, rules.ambiguous) if h not in amb_t]
 
-    score = 3 * len(core_t) + 2 * len(core_s)
+    score = 3 * (len(core_t) + len(amb_t)) + 2 * (len(core_s) + len(amb_s))
     score += 3 if tok_t else (1 if tok_s else 0)
     score += min(2, len(ctx))
     score += 2 * len(ent_t) + len(ent_s)
-    signals = core_t + core_s + (["AI"] if (tok_t or tok_s) else []) + ent_t + ent_s + sorted(ctx)
+    strong = core_t + core_s + amb_t + amb_s + (["AI"] if (tok_t or tok_s) else []) + ent_t + ent_s
+    signals = strong + sorted(ctx)
 
     off = _hits(title, rules.off_topic)
     incidental = _hits(title + " " + summary, rules.incidental)
     if off and not core_t:
+        if tok_t and not incidental:
+            return {"relevance": "maybe", "score": score, "category": PENDING,
+                    "reason": f"命中：AI；标题含体育/娱乐/社会语境（{', '.join(off[:3])}），待人工确认"}
         why = f"排除：标题属体育/娱乐/社会语境（{', '.join(off[:3])}）"
         if incidental:
             why += f"，仅提及 AI 使用（{', '.join(incidental[:2])}）"
         return {"relevance": "no", "score": score, "category": None, "reason": why}
 
-    if score >= rules.th_include and (core_t or core_s or tok_t):
+    if score >= rules.th_include and (core_t or core_s or amb_t or amb_s or tok_t):
         relevance = "yes"
-    elif score >= rules.th_pending and signals:
+    elif score >= rules.th_pending and strong:
         relevance = "maybe"
     else:
         return {"relevance": "no", "score": score, "category": None,

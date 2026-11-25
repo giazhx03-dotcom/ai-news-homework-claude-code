@@ -17,3 +17,5 @@ logs/*
 .claude/
 *.pem
 *.key
+# 本机生成的 launchd 配置含绝对路径（用户名），不提交；模板见 scheduling/ainews.plist.template
+scheduling/com.*.plist

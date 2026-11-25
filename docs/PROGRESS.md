@@ -1,0 +1,71 @@
+# 进度记录
+
+时间均为 Asia/Singapore。截止时间：2026-11-28 12:00。
+
+## 2026-11-26 环境检查（02:25）
+
+- 项目路径：`~/Desktop/<项目目录>`（初始为空目录）。
+- 系统：macOS 26.6；Python：`/usr/bin/python3` 3.9.6（CommandLineTools）；Git 2.50.1。
+- 网络正常；系统时区 `/etc/localtime → Asia/Singapore`。
+- GitHub：没有 gh CLI，没有 SSH 密钥，钥匙串中没有 github.com 凭据，也没有 GH_TOKEN 环境变量。
+
+## 分工（主控 + 子Agent）
+
+| 角色 | 负责 | 结果 |
+|---|---|---|
+| 主控 | 制定 `docs/CONTRACT.md`（数据字段、接口、文件归属）；实现 timeutil / storage / dedupe / classify / pipeline / CLI；定时；Git；文档 | 完成 |
+| 子Agent A | 验证 RSS 来源，实现 `fetcher.py`，编写 `tests/test_fetcher.py` 和测试数据，撰写 `docs/SOURCES.md` | 验证 11 个候选，选定量子位、TechCrunch AI；32 项测试 |
+| 子Agent B | 按约定格式实现 `report.py`（HTML/MD/索引），编写 `tests/test_report.py` | 21 项测试 |
+| 独立审查子Agent | 只读审查，对照验收要求逐项检查 | 8 项中 5 项满足、3 项部分满足；提出 8 个问题，主控已修复其中第 2–8 项 |
+
+## 审查问题处理
+
+| # | 问题 | 处理 |
+|---|---|---|
+| 1 | launchd 触发后 Python 无法读取桌面目录（TCC） | **未解决，需要用户授权**，方法见 docs/SCHEDULING.md |
+| 2 | 提交了含本机路径的 plist | 已从 Git 移除并加入 gitignore，只保留模板 |
+| 3 | `--until` 早于 `--since` 时静默通过 | 现在报错，退出码 2；时间格式错误也给出友好提示 |
+| 4 | Claude/Gemini 等歧义词误收（如 Monet、horoscope） | 改为区分大小写，且必须同时有其他 AI 信号 |
+| 5 | “AI 天气模型”、“AI 电影”被体育娱乐规则误杀 | 去掉“天气”；标题有独立 AI 时归入待确认 |
+| 6 | 只有语境词也进入待确认 | 现在至少需要一个强信号 |
+| 7 | 当日已有条目、本次运行失败时没有醒目提示 | 新增失败提示（HTML 与 MD） |
+| 8 | 空来源、regenerate 生成空日报、日报生成异常时缺日志、Markdown `&` | 均已修复并补充测试 |
+
+## 真实运行记录（真实网络）
+
+规则修正后，清空了之前的数据（旧数据已移到会话临时目录，没有删除），然后按顺序执行：
+
+| 运行 | 时间 | 模式/参数 | 结果 |
+|---|---|---|---|
+| 20261126T023954-908e | 02:39 | 首次（各来源 2026-11-23 02:39 — 2026-11-26 02:39） | 量子位 抓取 10、相关 8、新增 8；TechCrunch AI 抓取 20、相关 20、新增 20；**共 28 条** |
+| 20261126T023957-d469 | 02:39 | 增量（窗口从 20:39 起，即重叠 6h） | 新增 0，两个来源各有 5 条重复 → 重复运行不会重复新增 |
+| 20261126T023958-7643 | 02:40 | 增量 | 新增 0 |
+| 20261126T024004-fe5f | 02:40 | 增量 + `--force-fail techcrunch_ai`（**模拟故障**，网络真实） | 量子位成功；TechCrunch 失败，成功位置保持 02:39 不变，连续失败 1 次 |
+| 20261126T024006-c895 | 02:40 | 增量（恢复） | TechCrunch 窗口从 20:39 起（上次成功位置 − 6h），状态恢复为 ok，连续失败清零 |
+| 20261126T024009-a171 | 02:40 | 手动 `--since 2026-11-24T00:00 --until 2026-11-25T00:00` | 窗口内 3 条，全部重复；手动区间不推进增量位置 |
+| 20261126T024026-e9b1 | 02:40 | 增量 | 新增 0；当日日报保留 28 条（同日 7 次运行，内容没有丢失） |
+
+当日日报分类：模型与研究 1、产品与工具 9、行业与政策 11、待确认 7。
+
+“故障后补取遗漏文章”需要真实时间流逝，所以用模拟数据测试：`test_single_source_failure_and_recovery`。
+
+## 定时任务验证
+
+| 阶段 | 状态 |
+|---|---|
+| 配置生成 | ✅ `plutil -lint` OK |
+| 任务安装启用 | ✅ `launchctl print` 显示已加载、enabled，program 和 working directory 正确 |
+| 手动触发（kickstart） | ✅ launchd 确实启动了进程（runs=2） |
+| 触发后执行成功 | ❌ 退出码 1，原因：`PermissionError: Operation not permitted: .../.venv/pyvenv.cfg`（macOS TCC 阻止后台进程访问“桌面”） |
+| 自然运行（09:00） | ⏳ 未发生；在授权解决之前也会失败 |
+
+## 测试
+
+`.venv/bin/python -m unittest discover -s tests -t . -v`：共 77 项，全部 OK，跳过 2 项（真实网络测试需设 `AINEWS_LIVE=1`，样例输出需设 `AINEWS_WRITE_SAMPLE=1`）。
+真实网络测试 `AINEWS_LIVE=1 ... LiveFetchTest`：两个来源都 ok（量子位 10 条，TechCrunch 20 条）。
+
+## Git 版本记录
+
+见 `git log`。各提交：
+- `d2b84be` v1.0：初始实现与首次真实运行样例
+- （本次提交）审查问题修复、规则修正、真实运行重做、进度记录

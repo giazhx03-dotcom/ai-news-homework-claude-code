@@ -60,7 +60,11 @@ class Paths:
 
 def load_sources(path: Optional[Path] = None) -> List[Dict]:
     p = path or (PROJECT_ROOT / "config" / "sources.json")
-    return json.loads(Path(p).read_text(encoding="utf-8"))["sources"]
+    data = json.loads(Path(p).read_text(encoding="utf-8"))
+    sources = data.get("sources") if isinstance(data, dict) else None
+    if not sources:
+        raise ValueError(f"来源配置为空或格式错误（需要 {{\"sources\": [...]}}）：{p}")
+    return sources
 
 
 def _atomic_write(path: Path, text: str):
@@ -167,6 +171,10 @@ def run(base: Path = PROJECT_ROOT, sources: Optional[List[Dict]] = None, fetch: 
     sources = sources if sources is not None else load_sources()
     if only:
         sources = [s for s in sources if s["id"] in only]
+    if not sources:
+        raise ValueError("没有可处理的来源（检查 config/sources.json 或 --sources 参数）")
+    if since and until and timeutil.to_utc(since) >= timeutil.to_utc(until):
+        raise ValueError(f"起始时间必须早于结束时间：since={iso_utc(since)} until={iso_utc(until)}")
     force_fail = set(force_fail or [])
     with run_lock(paths.lock):
         now = timeutil.to_utc(now) if now else now_utc()
@@ -187,8 +195,12 @@ def run(base: Path = PROJECT_ROOT, sources: Optional[List[Dict]] = None, fetch: 
                 "window_end": max((r["window_end"] for r in results), default=None),
             }
             store.save_run(run_rec)
-            out = write_outputs(store, paths, report_date, sources)
-            run_rec["outputs"] = out
+            try:
+                run_rec["outputs"] = write_outputs(store, paths, report_date, sources)
+            except Exception as e:  # 日报生成失败也要留下运行日志
+                run_rec["outputs"] = {}
+                run_rec["output_error"] = f"{type(e).__name__}: {e}"
+                _log(paths, f"ERROR 生成日报失败 {run_rec['output_error']}\n{traceback.format_exc(limit=5)}")
         finally:
             store.close()
     _log(paths, _summary_line(run_rec))
@@ -296,11 +308,15 @@ def write_outputs(store: Store, paths: Paths, report_date: str, sources: List[Di
             "latest_html": str(paths.reports / "latest.html"), "index": str(paths.reports / "index.html")}
 
 
-def regenerate(base: Path = PROJECT_ROOT, report_date: Optional[str] = None) -> Dict:
+def regenerate(base: Path = PROJECT_ROOT, report_date: Optional[str] = None,
+               sources: Optional[List[Dict]] = None) -> Dict:
     paths = Paths(base)
+    report_date = report_date or sgt_date()
     with run_lock(paths.lock):
         store = Store(paths.db)
         try:
-            return write_outputs(store, paths, report_date or sgt_date(), load_sources())
+            if report_date not in store.report_dates():
+                raise ValueError(f"{report_date} 没有运行记录或文章，不生成空日报")
+            return write_outputs(store, paths, report_date, sources or load_sources())
         finally:
             store.close()

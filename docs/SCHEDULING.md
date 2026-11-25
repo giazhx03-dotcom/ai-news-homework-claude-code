@@ -7,7 +7,7 @@
 | 解释器 | `<项目>/.venv/bin/python -m ainews run`（明确的绝对路径） |
 | 工作目录 | 项目根目录（`WorkingDirectory`） |
 | 配置模板 | `scheduling/ainews.plist.template` |
-| 本机生成的配置 | `scheduling/com.ai-news-homework-claude-code.2f4452a3.plist` |
+| 本机生成的配置 | `scheduling/com.ai-news-homework-claude-code.2f4452a3.plist`（含本机绝对路径，已 gitignore，由 `schedule.sh generate` 生成） |
 | 安装位置 | `~/Library/LaunchAgents/<标识>.plist` |
 | 日志 | `logs/run.log`（每次运行的来源状态、数量、错误）、`logs/runs.jsonl`（结构化记录）、`logs/launchd.out.log` / `logs/launchd.err.log`（进程输出） |
 | 防并发 | 程序用 `fcntl.flock` 给 `data/.run.lock` 加非阻塞锁，第二个实例直接退出（退出码 75）；launchd 本身也不会并行启动同一个任务 |
