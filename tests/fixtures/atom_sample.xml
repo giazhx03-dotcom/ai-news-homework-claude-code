@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>样例 Atom 源</title>
+  <id>urn:example:feed</id>
+  <updated>2026-11-25T18:00:00Z</updated>
+  <entry>
+    <title type="html">OpenAI &amp;amp; 微软 &amp;lt;合作&amp;gt;</title>
+    <id>urn:uuid:aaaa-0001</id>
+    <link rel="self" href="https://example.org/api/entries/1"/>
+    <link rel="alternate" type="text/html" href="https://example.org/posts/1"/>
+    <published>2026-11-25T08:30:00.123Z</published>
+    <updated>2026-11-25T09:00:00Z</updated>
+    <summary type="html">&lt;p&gt;摘要&lt;/p&gt;&lt;script&gt;steal()&lt;/script&gt;&lt;p&gt;A &amp;amp; B&lt;/p&gt;</summary>
+  </entry>
+  <entry>
+    <title>Only updated with offset</title>
+    <id>urn:uuid:aaaa-0002</id>
+    <link href="https://example.org/posts/2"/>
+    <updated>2026-11-25T12:44:51-05:00</updated>
+    <content type="html">&lt;div&gt;Content   used as summary&lt;/div&gt;</content>
+  </entry>
+  <entry>
+    <title>No date, related link only</title>
+    <id>urn:uuid:aaaa-0003</id>
+    <link rel="related" href="https://example.org/posts/3"/>
+  </entry>
+  <entry>
+    <title>Invalid: no id and no link</title>
+    <updated>2026-11-25T12:00:00Z</updated>
+  </entry>
+  <entry>
+    <title>Bad date</title>
+    <id>urn:uuid:aaaa-0005</id>
+    <link rel="alternate" href="https://example.org/posts/5"/>
+    <published>not a date</published>
+  </entry>
+</feed>

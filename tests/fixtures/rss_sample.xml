@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<channel>
+  <title>样例 RSS 源</title>
+  <link>https://example.com/</link>
+  <description>测试用</description>
+  <item>
+    <title>  大模型发布：GPT &amp; Claude 对比 &lt;深度&gt;  </title>
+    <link>https://example.com/articles/1001?utm=rss</link>
+    <guid isPermaLink="false">example-1001</guid>
+    <pubDate>Wed, 25 Nov 2026 16:34:09 +0000</pubDate>
+    <description><![CDATA[<p>这是<b>简介</b>&nbsp;第一段。</p><script>alert('xss')</script><p>Tom &amp; Jerry   用   AI</p>]]></description>
+  </item>
+  <item>
+    <title>缺少日期的条目</title>
+    <link>https://example.com/articles/1002</link>
+    <guid>https://example.com/articles/1002</guid>
+    <description>纯文本简介</description>
+  </item>
+  <item>
+    <title>无法解析日期的条目</title>
+    <link>https://example.com/articles/1003</link>
+    <pubDate>昨天下午</pubDate>
+    <description>&lt;p&gt;Hello &amp;amp; world&lt;/p&gt;&lt;script&gt;bad()&lt;/script&gt;</description>
+  </item>
+  <item>
+    <title>无时区日期（dc:date）与 content:encoded</title>
+    <link>https://example.com/articles/1004</link>
+    <dc:date>2026-11-25T10:00:00</dc:date>
+    <content:encoded><![CDATA[<div>来自 content:encoded 的<i>正文</i></div>]]></content:encoded>
+  </item>
+  <item>
+    <title>只有 guid 没有 link</title>
+    <guid isPermaLink="false">example-1005</guid>
+    <pubDate>Tue, 24 Nov 2026 13:00:00 GMT</pubDate>
+  </item>
+  <item>
+    <title>无效：既无 link 也无 guid</title>
+    <pubDate>Tue, 24 Nov 2026 13:00:00 GMT</pubDate>
+  </item>
+  <item>
+    <guid isPermaLink="false">example-1007-no-title-no-link</guid>
+    <description>无效：既无 title 也无 link</description>
+  </item>
+</channel>
+</rss>

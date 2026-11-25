@@ -1,0 +1,2 @@
+# 本项目仅使用 Python 3.9+ 标准库，无第三方依赖。
+# 保留此文件以便将来添加依赖：.venv/bin/python -m pip install -r requirements.txt

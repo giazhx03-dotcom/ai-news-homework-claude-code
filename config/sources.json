@@ -1,0 +1,14 @@
+{"sources": [
+  {"id": "qbitai", "name": "量子位", "website": "https://www.qbitai.com/",
+   "rss_url": "https://www.qbitai.com/feed",
+   "language": "zh", "focus": "中文 AI 垂直媒体：大模型、AI 产品与应用、国内外 AI 公司与行业动态",
+   "reason": "AI 专门媒体，几乎全部条目与 AI 相关；无需登录，RSS 2.0 可直接读取，日更多篇，补充中文/国内视角",
+   "verified_at": "2026-11-25T18:28:00+00:00",
+   "verify_result": "HTTP 200, RSS 2.0, 10 条, 最新条目日期 2026-11-25T16:34:09+00:00（72 小时内 10/10 条）"},
+  {"id": "techcrunch_ai", "name": "TechCrunch AI", "website": "https://techcrunch.com/category/artificial-intelligence/",
+   "rss_url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+   "language": "en", "focus": "英文科技行业报道的 AI 分类：AI 创业公司、融资、产品发布、政策监管与大厂动态",
+   "reason": "老牌行业媒体的 AI 专栏 feed，更新频繁（20 条均在 72 小时内），无需登录，补充英文/全球行业视角",
+   "verified_at": "2026-11-25T18:28:00+00:00",
+   "verify_result": "HTTP 200, RSS 2.0, 20 条, 最新条目日期 2026-11-25T18:11:46+00:00（72 小时内 20/20 条）"}
+]}
